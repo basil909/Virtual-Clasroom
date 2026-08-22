@@ -1,16 +1,30 @@
-# SkillX Virtual Classroom — Prototype
+# SkillX Virtual Classroom
 
-A **demonstration prototype** of a virtual learning platform with a Next.js frontend, Express API, SQLite database, and optional **Microsoft Teams** integration.
+A full-stack virtual learning platform built with Next.js, Express, TypeScript, SQLite, and optional Microsoft Teams integration. The project provides a practical foundation for managing courses, users, assignments, class sessions, and online meetings.
 
-> This is not production-ready software. It uses seeded demo data, local storage/JWT auth, and simplified flows suitable for demos and coursework.
+## What The Project Is About
 
-## What's included
+SkillX connects students, teachers, and administrators in one virtual classroom. Students can explore courses and attend scheduled sessions, teachers can manage classes and assignments, and administrators can manage platform data through role-based dashboards.
 
-- Marketing site (home, courses, teachers, pricing, about)
-- Role-based dashboards (admin, teacher, student)
-- JWT authentication with demo accounts
-- Class sessions with optional Microsoft Teams meeting links
-- SQLite backend with auto-seed on first run
+## Features
+
+- Marketing pages for the home page, courses, teachers, pricing, and about information
+- Role-based authentication and dashboards for admins, teachers, and students
+- Course browsing and course management APIs
+- Assignment creation and submission workflows
+- Class session scheduling and session management
+- Optional Microsoft Teams meeting creation and join links
+- SQLite database with schema and seed data
+- REST API built with Express and TypeScript
+
+## Code And Technologies
+
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS
+- **Backend:** Node.js, Express, TypeScript, Zod
+- **Database:** SQLite with `better-sqlite3`
+- **Authentication:** JWT and bcrypt password hashing
+- **Integrations:** Microsoft Graph and Microsoft Teams through MSAL
+- **Organization:** reusable React components, route modules, services, repositories, and middleware
 
 ## Quick start
 
@@ -41,14 +55,6 @@ Open `http://localhost:3000` (or 3001 if 3000 is busy).
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-## Demo logins
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@skillx.com | admin123 |
-| Teacher | teacher@skillx.com | teacher123 |
-| Student | student@skillx.com | student123 |
-
 ## Microsoft Teams (optional)
 
 1. Register an app in [Azure Portal](https://portal.azure.com)
@@ -70,7 +76,7 @@ Virtual Classroom/
 └── README.md          This file
 ```
 
-## Prototype limitations (by design)
+## Current Scope
 
 - No email verification, password reset, or payment processing
 - No file uploads or in-app video (Teams join links only)
