@@ -1,6 +1,6 @@
 # SkillX Virtual Classroom
 
-A full-stack virtual learning platform built with Next.js, Express, TypeScript, SQLite, and optional Microsoft Teams integration. The project provides a practical foundation for managing courses, users, assignments, class sessions, and online meetings.
+A full-stack virtual learning platform built with Next.js, Express, TypeScript, and SQLite. The project provides a practical foundation for managing courses, users, assignments, and class sessions.
 
 ## What The Project Is About
 
@@ -13,7 +13,6 @@ SkillX connects students, teachers, and administrators in one virtual classroom.
 - Course browsing and course management APIs
 - Assignment creation and submission workflows
 - Class session scheduling and session management
-- Optional Microsoft Teams meeting creation and join links
 - SQLite database with schema and seed data
 - REST API built with Express and TypeScript
 
@@ -23,8 +22,12 @@ SkillX connects students, teachers, and administrators in one virtual classroom.
 - **Backend:** Node.js, Express, TypeScript, Zod
 - **Database:** SQLite with `better-sqlite3`
 - **Authentication:** JWT and bcrypt password hashing
-- **Integrations:** Microsoft Graph and Microsoft Teams through MSAL
 - **Organization:** reusable React components, route modules, services, repositories, and middleware
+
+## Planned For The Next Update
+
+- Microsoft Teams integration for creating online class meetings and sharing join links
+- Microsoft Graph authentication through MSAL
 
 ## Quick start
 
@@ -55,23 +58,12 @@ Open `http://localhost:3000` (or 3001 if 3000 is busy).
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-## Microsoft Teams (optional)
-
-1. Register an app in [Azure Portal](https://portal.azure.com)
-2. Add redirect URI: `http://localhost:4000/api/auth/microsoft/callback`
-3. Grant Graph permissions: `User.Read`, `OnlineMeetings.ReadWrite`, `offline_access`
-4. Set `AZURE_*` values in `backend/.env`
-
-Teachers: **Dashboard → My Classes → Connect Microsoft Teams**
-
-Without Azure config, the rest of the prototype still works; Teams scheduling will show a configuration message.
-
 ## Project structure
 
 ```
 Virtual Classroom/
 ├── frontend/          Next.js UI
-├── backend/           Express API + SQLite + Teams
+├── backend/           Express API + SQLite
 │   └── STRUCTURE.md   Backend layout
 └── README.md          This file
 ```
