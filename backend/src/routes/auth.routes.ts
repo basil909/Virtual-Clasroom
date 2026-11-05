@@ -14,7 +14,8 @@ const registerSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['admin', 'teacher', 'student']),
+  // Admin accounts cannot be self-registered.
+  role: z.enum(['teacher', 'student']),
 })
 
 authRoutes.post('/login', async (req, res, next) => {

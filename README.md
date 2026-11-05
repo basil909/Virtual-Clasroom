@@ -71,6 +71,7 @@ Virtual Classroom/
 ## Current Scope
 
 - No email verification, password reset, or payment processing
-- No file uploads or in-app video (Teams join links only)
+- No file uploads. Classes use a built-in classroom (camera preview + live chat); shared video requires a Microsoft Teams meeting
 - SQLite database (single-machine)
 - No automated tests or deployment config
+- Admin accounts cannot be self-registered; use the seeded demo admin (`npm run db:seed`)

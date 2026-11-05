@@ -1,10 +1,30 @@
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
-dist/
 out/
-npm-debug.log
+dist/
+
+# Vercel
+.vercel/
+
+# Environment
+.env
+.env.local
+.env.*.local
+env.local
+
+# Logs
+npm-debug.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
 pnpm-lock.yaml
 yarn.lock
-env.local
-/.DS_Store
-.vercel
+
+.next-dev/
+*.tsbuildinfo

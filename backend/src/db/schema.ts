@@ -79,6 +79,18 @@ export function runSchema(db: Database.Database) {
       updated_at TEXT DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS session_messages (
+      id TEXT PRIMARY KEY,
+      session_id TEXT NOT NULL REFERENCES class_sessions(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      user_name TEXT NOT NULL,
+      text TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_session_messages_session
+      ON session_messages (session_id, created_at);
+
     CREATE TABLE IF NOT EXISTS oauth_states (
       state TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,

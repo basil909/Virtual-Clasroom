@@ -1,5 +1,5 @@
-import Navbar from '../navbar/Navbar'
-import Footer from '../sections/Footer'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
 export default function MarketingShell({ children }: { children: React.ReactNode }) {
   return (

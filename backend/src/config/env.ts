@@ -37,9 +37,9 @@ export const env = {
     ],
   },
   isAzureConfigured(): boolean {
-    return Boolean(
-      this.azure.tenantId && this.azure.clientId && this.azure.clientSecret
-    )
+    const { tenantId, clientId, clientSecret } = this.azure
+    const isReal = (v: string) => Boolean(v) && !v.startsWith('your-')
+    return isReal(tenantId) && isReal(clientId) && isReal(clientSecret)
   },
 }
 
@@ -49,4 +49,11 @@ export function assertAzureConfigured() {
       'Microsoft Teams is not configured. Set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET in backend/.env'
     )
   }
+}
+
+if (
+  env.nodeEnv === 'production' &&
+  (env.jwtSecret === 'skillx-dev-secret-change-me' || env.jwtSecret === 'change-this-in-production')
+) {
+  throw new Error('JWT_SECRET must be set to a strong, unique value in production.')
 }

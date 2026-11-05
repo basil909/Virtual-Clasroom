@@ -1,17 +1,51 @@
+import { v4 as uuid } from 'uuid'
 import { db } from '../db/connection.js'
 import type { Assignment } from '../types/index.js'
 
 export const assignmentRepository = {
+  create(input: {
+    courseId: string
+    title: string
+    description: string | null
+    dueDate: string
+    createdBy: string
+  }): string {
+    const id = uuid()
+    db.prepare(
+      `INSERT INTO assignments (id, course_id, title, description, due_date, created_by)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).run(id, input.courseId, input.title, input.description, input.dueDate, input.createdBy)
+    return id
+  },
+
+  findById(id: string): { id: string; courseId: string } | null {
+    const row = db
+      .prepare('SELECT id, course_id FROM assignments WHERE id = ?')
+      .get(id) as { id: string; course_id: string } | undefined
+    return row ? { id: row.id, courseId: row.course_id } : null
+  },
+
+  submit(assignmentId: string, studentId: string) {
+    db.prepare(
+      `INSERT INTO assignment_submissions (id, assignment_id, student_id, status, submitted_at)
+       VALUES (?, ?, ?, 'submitted', ?)
+       ON CONFLICT(assignment_id, student_id) DO UPDATE SET
+         status = CASE WHEN status = 'graded' THEN status ELSE 'submitted' END,
+         submitted_at = CASE WHEN status = 'graded' THEN submitted_at ELSE excluded.submitted_at END`
+    ).run(uuid(), assignmentId, studentId, new Date().toISOString())
+  },
+
   listForStudent(studentId: string): Assignment[] {
     const rows = db
       .prepare(
         `SELECT a.*, c.title as course_title, s.status, s.grade
          FROM assignments a
          JOIN courses c ON c.id = a.course_id
+         JOIN enrollments e ON e.course_id = a.course_id AND e.student_id = ?
          LEFT JOIN assignment_submissions s ON s.assignment_id = a.id AND s.student_id = ?
          ORDER BY a.due_date`
       )
-      .all(studentId) as Array<{
+      .all(studentId, studentId) as Array<{
       id: string
       course_id: string
       course_title: string

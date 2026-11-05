@@ -1,12 +1,1292 @@
 @import "tailwindcss";
 
-html {
-  scroll-behavior: smooth;
+/* =========================================================
+   SKILLX — V3 DESIGN SYSTEM
+   Editorial education platform + modern product UI.
+
+   Layer order (set by Tailwind): theme → base → components → utilities
+   Everything below lives in a layer EXCEPT .container*, which is
+   deliberately unlayered so it beats Tailwind's built-in `container`.
+   ========================================================= */
+
+/* Expose tokens to Tailwind: bg-surface, text-foreground, border-border … */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border: var(--border);
+  --color-brand: var(--primary);
+  --color-brand-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  background: #f5f7fb;
-  font-family: Arial, Helvetica, sans-serif;
+/* =========================================================
+   TOKENS
+   ========================================================= */
+
+:root {
+  color-scheme: light;
+
+  /* Core palette */
+  --background: #f6f6f3;
+  --background-deep: #ecece6;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-subtle: #f2f2ed;
+  --surface-muted: #e8e9e3;
+  --surface-inverse: #12141b;
+  --surface-inverse-raised: #1a1c23;
+
+  --ink: #111216;
+  --foreground: var(--ink);
+  --foreground-secondary: #43454d;
+  --foreground-muted: #6b6d75; /* was #73757d (4.2:1) → 4.8:1 on --background */
+  --foreground-subtle: #9b9da4; /* decorative only; below 4.5:1, never for body text */
+  --foreground-disabled: #c6c7ca;
+  --foreground-inverse-muted: #b8bac4;
+
+  /* Brand — one strong color, one accent */
+  --primary: #5757e8;
+  --primary-hover: #4646d6;
+  --primary-active: #3838bb;
+  --primary-soft: #ececff;
+  --primary-soft-hover: #dfdfff;
+  --primary-foreground: #ffffff;
+
+  --accent: #c9f15b;
+  --accent-hover: #bce84d;
+  --accent-ink: #1b210e;
+
+  --secondary: var(--ink);
+  --secondary-hover: #24262d;
+  --secondary-foreground: #ffffff;
+
+  /* Borders */
+  --border: #dedfd8;
+  --border-subtle: #e9e9e4;
+  --border-strong: #c7c8c0;
+  --border-focus: #8787ef;
+
+  /* Status */
+  --success: #169b62;
+  --success-soft: #edf9f3;
+  --warning: #b96a00;
+  --warning-soft: #fff7e7;
+  --danger: #cc3d35;
+  --danger-soft: #fff0ef;
+  --info: #1677a8;
+  --info-soft: #edf8fd;
+
+  /* Gradients */
+  --gradient-brand-soft: linear-gradient(135deg, var(--primary-soft), var(--background));
+
+  /* Geometry */
+  --radius-xs: 0.4rem;
+  --radius-sm: 0.65rem;
+  --radius-md: 0.9rem;
+  --radius-lg: 1.1rem;
+  --radius-xl: 1.4rem;
+  --radius-2xl: 1.8rem;
+  --radius-3xl: 2.4rem;
+  --radius-control: 0.8rem;
+  --radius-full: 9999px;
+
+  /* Shadows — used sparingly */
+  --shadow-xs: 0 1px 2px rgb(17 18 22 / 0.04);
+  --shadow-sm: 0 7px 20px rgb(17 18 22 / 0.055);
+  --shadow-md: 0 18px 45px rgb(17 18 22 / 0.09);
+  --shadow-lg: 0 30px 70px rgb(17 18 22 / 0.13);
+  --shadow-xl: 0 45px 100px rgb(17 18 22 / 0.17);
+
+  /* Layout */
+  --content-width: 1240px;
+  --content-wide: 1400px;
+  --content-narrow: 760px;
+  --navbar-height: 76px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+
+  /* Type — set --font-inter via next/font to actually load Inter */
+  --font-sans:
+    var(--font-inter, Inter), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --transition-fast: 160ms var(--ease-out);
+  --transition-base: 280ms var(--ease-out);
+  --transition-lift: 420ms var(--ease-out);
+  --transition-slow: 520ms var(--ease-out);
+}
+
+/* =========================================================
+   BASE
+   (Tailwind's preflight already handles box-sizing, margins,
+   media elements, button/input font inheritance and link reset.)
+   ========================================================= */
+
+@layer base {
+  html {
+    min-width: 320px;
+    background: var(--background);
+    scroll-padding-top: calc(var(--navbar-height) + 1.25rem);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeSpeed;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-x: clip; /* doesn't create a scroll container, so sticky keeps working */
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+  }
+
+  /* ---- Typography (mobile-first) ---- */
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--foreground);
+    font-weight: 760;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  h1 {
+    max-width: 980px;
+    font-size: clamp(3rem, 15vw, 5rem);
+    line-height: 0.88;
+    letter-spacing: -0.075em;
+  }
+
+  h2 {
+    font-size: clamp(2.25rem, 11vw, 4rem);
+    line-height: 0.94;
+    letter-spacing: -0.06em;
+  }
+
+  h3 {
+    font-size: clamp(1.45rem, 2.6vw, 2rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+
+  h4 {
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+
+  @media (min-width: 701px) {
+    h1 {
+      font-size: clamp(3.2rem, 8.3vw, 7.6rem);
+    }
+
+    h2 {
+      font-size: clamp(2.35rem, 5.4vw, 4.7rem);
+    }
+  }
+
+  p {
+    color: var(--foreground-secondary);
+  }
+
+  strong {
+    color: var(--foreground);
+    font-weight: 700;
+  }
+
+  a:not([class]) {
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  /* Single reduced-motion rule (was declared twice) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Let Tailwind text-color utilities override the unlayered preflight reset. */
+a,
+button {
+  color: revert-layer;
+}
+
+/* =========================================================
+   CONTAINERS — intentionally unlayered
+   max-width: none cancels the max-width Tailwind's `container`
+   utility would otherwise add at each breakpoint.
+   ========================================================= */
+
+.container,
+.container-wide,
+.container-narrow {
+  max-width: none;
+  margin-inline: auto;
+}
+
+.container {
+  width: min(calc(100% - (var(--gutter) * 2)), var(--content-width));
+}
+
+.container-wide {
+  width: min(calc(100% - (var(--gutter) * 2)), var(--content-wide));
+}
+
+.container-narrow {
+  width: min(calc(100% - (var(--gutter) * 2)), var(--content-narrow));
+}
+
+/* =========================================================
+   COMPONENTS
+   ========================================================= */
+
+@layer components {
+  /* ---------- Sections & layout ---------- */
+
+  .section {
+    position: relative;
+    padding-block: 4rem;
+  }
+
+  .section-sm {
+    padding-block: clamp(3.5rem, 6vw, 5.5rem);
+  }
+
+  .section-lg {
+    padding-block: clamp(7rem, 12vw, 12rem);
+  }
+
+  @media (min-width: 481px) {
+    .section {
+      padding-block: clamp(5.5rem, 9vw, 9.5rem);
+    }
+  }
+
+  /* Editorial two-column layout: stacked on mobile */
+  :is(.split-layout, .two-column, .section-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  @media (min-width: 901px) {
+    :is(.split-layout, .two-column, .section-grid) {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: clamp(2.5rem, 6vw, 7rem);
+    }
+  }
+
+  .section-header {
+    max-width: 760px;
+  }
+
+  .section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: fit-content;
+    margin-bottom: 1.2rem;
+    color: var(--primary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .section-eyebrow::before {
+    content: "";
+    width: 24px;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: currentColor;
+  }
+
+  .section-description {
+    max-width: 640px;
+    margin-top: 1.25rem;
+    color: var(--foreground-muted);
+    font-size: 1.08rem;
+    line-height: 1.75;
+  }
+
+  /* ---------- Navigation ---------- */
+
+  :is(.navbar, .site-header) {
+    position: relative;
+    z-index: 50;
+  }
+
+  :is(.navbar-inner, .site-header-inner) {
+    min-height: var(--navbar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Add .navbar-brand to the logo link to opt out of the underline effect */
+  :is(.nav-link, .navbar a:not(.btn, .navbar-brand)) {
+    position: relative;
+    color: var(--foreground-secondary);
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: color var(--transition-fast);
+  }
+
+  :is(.nav-link, .navbar a:not(.btn, .navbar-brand))::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.4rem;
+    height: 2px;
+    background: var(--primary);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--transition-base);
+  }
+
+  @media (hover: hover) {
+    :is(.nav-link, .navbar a:not(.btn, .navbar-brand)):hover {
+      color: var(--foreground);
+    }
+
+    :is(.nav-link, .navbar a:not(.btn, .navbar-brand)):hover::after {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Floating nav option */
+  .navbar-floating {
+    margin: 1rem auto 0;
+    width: calc(100% - 1rem);
+    min-height: 66px;
+    padding-inline: 1rem;
+    border: 1px solid rgb(17 18 22 / 0.08);
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 0.84);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(16px); /* prefixed automatically by the build */
+  }
+
+  @media (min-width: 701px) {
+    .navbar-floating {
+      width: min(calc(100% - 2rem), var(--content-width));
+    }
+  }
+
+  /* ---------- Hero ---------- */
+
+  :is(.hero, .hero-section, [data-hero]) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    background:
+      radial-gradient(circle at 83% 35%, rgb(87 87 232 / 0.16), transparent 27rem),
+      linear-gradient(180deg, #fbfbf8 0%, #f6f6f3 100%);
+  }
+
+  /* Grid texture */
+  :is(.hero, .hero-section, [data-hero])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image:
+      linear-gradient(to right, rgb(17 18 22 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(17 18 22 / 0.045) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 86%);
+  }
+
+  /* Accent glow — radial-gradient instead of filter: blur(100px),
+     which forced an expensive full-layer repaint */
+  :is(.hero, .hero-section, [data-hero])::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: 40rem;
+    height: 40rem;
+    right: -15rem;
+    top: calc(12% - 3rem);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(201 241 91 / 0.22) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  :is(.hero, .hero-section, [data-hero]) h1 {
+    color: var(--ink);
+  }
+
+  :is(.hero, .hero-section, [data-hero]) p {
+    max-width: 640px;
+    color: var(--foreground-secondary);
+    font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+    line-height: 1.75;
+  }
+
+  :is(.hero, .hero-section, [data-hero]) .text-gradient {
+    background: none;
+    color: var(--primary);
+    -webkit-text-fill-color: currentColor;
+  }
+
+  :is(.hero-content, .hero-inner) {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+
+  .hero-copy {
+    max-width: 760px;
+    padding-block: 4.5rem 1rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  /* Product mockup: stacked under the copy on small screens */
+  :is(.hero-visual, .hero-dashboard, .dashboard-preview, .product-preview) {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 660px;
+    margin: 2.5rem auto 0;
+    padding: 0.7rem;
+    border: 1px solid #d7d8d1;
+    border-radius: 1.6rem;
+    background: var(--ink);
+    box-shadow: var(--shadow-xl);
+  }
+
+  :is(.hero-visual, .hero-dashboard, .dashboard-preview, .product-preview)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(145deg, rgb(255 255 255 / 0.06), transparent 40%),
+      linear-gradient(110deg, transparent 50%, rgb(87 87 232 / 0.15));
+    pointer-events: none;
+  }
+
+  :is(.hero-visual, .hero-dashboard, .dashboard-preview, .product-preview)::after {
+    content: "";
+    position: absolute;
+    width: 10rem;
+    height: 10rem;
+    left: -4.5rem;
+    bottom: -4.5rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(201 241 91 / 0.55) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  :is(.hero-visual-inner, .dashboard-preview-inner) {
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 1.05rem;
+    background: var(--surface-inverse-raised);
+  }
+
+  @media (min-width: 481px) {
+    .hero-copy {
+      padding-block: 6rem 2rem;
+    }
+
+    .hero-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions .btn {
+      width: auto;
+    }
+  }
+
+  @media (min-width: 701px) {
+    :is(.hero, .hero-section, [data-hero])::before {
+      background-size: 52px 52px;
+    }
+  }
+
+  @media (min-width: 901px) {
+    :is(.hero, .hero-section, [data-hero]) {
+      min-height: min(860px, 88vh);
+      min-height: min(860px, 88svh);
+    }
+
+    .hero-copy {
+      padding-block: 4rem 7rem;
+    }
+
+    :is(.hero-visual, .hero-dashboard, .dashboard-preview, .product-preview) {
+      position: absolute;
+      right: -10%;
+      bottom: 7%;
+      width: min(50vw, 560px);
+      max-width: none;
+      margin: 0;
+      transform: rotate(2.5deg);
+    }
+  }
+
+  @media (min-width: 1101px) {
+    :is(.hero-visual, .hero-dashboard, .dashboard-preview, .product-preview) {
+      right: -2%;
+      width: min(48vw, 610px);
+    }
+  }
+
+  /* ---------- Product UI / dashboard ---------- */
+
+  .ui-window {
+    overflow: hidden;
+    border: 1px solid rgb(17 18 22 / 0.08);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .ui-window-bar {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-inline: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    background: #fbfbf9;
+  }
+
+  .ui-window-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--foreground-disabled);
+  }
+
+  .ui-panel {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .ui-panel-dark {
+    border-color: rgb(255 255 255 / 0.08);
+    background: var(--surface-inverse-raised);
+    color: #fff;
+  }
+
+  /* ---------- Cards ---------- */
+
+  .card {
+    position: relative;
+    isolation: isolate; /* keeps the ::before sheen BEHIND card content */
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base),
+      border-color var(--transition-base);
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgb(255 255 255 / 0.72), transparent 36%);
+  }
+
+  .card-featured {
+    border-color: rgb(255 255 255 / 0.08);
+    background: var(--surface-inverse);
+    color: #fff;
+  }
+
+  /* a white sheen would wash out a dark card */
+  .card-featured::before {
+    background: linear-gradient(135deg, rgb(255 255 255 / 0.06), transparent 36%);
+  }
+
+  .card-featured :is(h3, h4) {
+    color: #fff;
+  }
+
+  .card-featured p {
+    color: var(--foreground-inverse-muted);
+  }
+
+  @media (hover: hover) {
+    .card-hover:hover {
+      transform: translateY(-7px);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  /* ---------- Course cards ----------
+     The old [class*="course-card"] selector also matched
+     course-card-body, -media, -title … and gave each its own border,
+     shadow and hover lift. Explicit classes only. */
+
+  :is(.course-grid, .courses-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 701px) {
+    :is(.course-grid, .courses-grid) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1101px) {
+    :is(.course-grid, .courses-grid) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .course-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+    transition:
+      transform var(--transition-lift),
+      box-shadow var(--transition-lift),
+      border-color var(--transition-lift);
+  }
+
+  :is(.course-card-media, .course-card-image) {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #eceef5;
+  }
+
+  :is(.course-card-media, .course-card-image)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(17 18 22 / 0.28), transparent 55%);
+    pointer-events: none;
+  }
+
+  .course-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 650ms var(--ease-out);
+  }
+
+  .course-card-body {
+    padding: 1.25rem;
+  }
+
+  .course-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--foreground-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .course-card-title {
+    margin-top: 0.75rem;
+    font-size: 1.35rem;
+    line-height: 1.05;
+  }
+
+  .course-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  @media (hover: hover) {
+    .course-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .course-card:hover img {
+      transform: scale(1.045);
+    }
+  }
+
+  /* ---------- Feature grid ----------
+     Mobile-first: no !important overrides needed. */
+
+  :is(.feature-grid, .platform-features-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 701px) {
+    :is(.feature-grid, .platform-features-grid) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 901px) {
+    :is(.feature-grid, .platform-features-grid) {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    /* Default span, so a 5th+ card isn't squeezed into 1 of 12 columns */
+    :is(.feature-grid, .platform-features-grid) > * {
+      grid-column: span 6;
+    }
+
+    :is(.feature-grid, .platform-features-grid) > :nth-child(1) {
+      grid-column: span 7;
+    }
+
+    :is(.feature-grid, .platform-features-grid) > :nth-child(2) {
+      grid-column: span 5;
+    }
+
+    :is(.feature-grid, .platform-features-grid) > :nth-child(3) {
+      grid-column: span 5;
+    }
+
+    :is(.feature-grid, .platform-features-grid) > :nth-child(4) {
+      grid-column: span 7;
+    }
+  }
+
+  :is(.feature-card, .platform-feature) {
+    min-height: 300px;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .feature-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--foreground-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .feature-accent {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgb(87 87 232 / 0.08), transparent 55%),
+      var(--surface);
+  }
+
+  .feature-accent::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    right: -5.5rem;
+    bottom: -5.5rem;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(201 241 91 / 0.55) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  /* ---------- Live classroom ----------
+     Explicit classes instead of [class*="live-class"]. */
+
+  :is(.live-class, .live-classroom) {
+    position: relative;
+    isolation: isolate; /* decorative layers sit behind the content */
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: var(--surface-inverse);
+    color: #fff;
+    box-shadow: var(--shadow-lg);
+  }
+
+  :is(.live-class, .live-classroom)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: linear-gradient(to bottom right, black 15%, transparent 85%);
+    pointer-events: none;
+  }
+
+  :is(.live-class, .live-classroom)::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: 28rem;
+    height: 28rem;
+    right: -11rem;
+    top: -11rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(87 87 232 / 0.2) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  :is(.live-class, .live-classroom) :is(h2, h3) {
+    color: #fff;
+  }
+
+  :is(.live-class, .live-classroom) p {
+    color: var(--foreground-inverse-muted);
+  }
+
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 30px;
+    padding-inline: 0.75rem;
+    border: 1px solid rgb(255 255 255 / 0.11);
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 0.05);
+    color: #d7f7b5;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Stats ---------- */
+
+  :is(.stats-grid, .stat-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-block: 1px solid var(--border);
+  }
+
+  :is(.stat, .stat-item) {
+    position: relative;
+    padding: 2rem 1.5rem;
+  }
+
+  :is(.stat, .stat-item) + :is(.stat, .stat-item) {
+    border-top: 1px solid var(--border);
+  }
+
+  :is(.stat, .stat-item) strong {
+    display: block;
+    font-size: clamp(2.5rem, 4.6vw, 4.3rem);
+    line-height: 0.95;
+    letter-spacing: -0.065em;
+  }
+
+  :is(.stat, .stat-item) span {
+    display: block;
+    margin-top: 0.6rem;
+    color: var(--foreground-muted);
+    font-size: 0.85rem;
+  }
+
+  @media (min-width: 701px) {
+    :is(.stats-grid, .stat-grid) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    :is(.stat, .stat-item) + :is(.stat, .stat-item) {
+      border-top: 0;
+      border-left: 1px solid var(--border);
+    }
+  }
+
+  /* ---------- Buttons ---------- */
+
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 46px;
+    padding: 0.8rem 1.1rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      transform var(--transition-fast),
+      background-color var(--transition-fast),
+      color var(--transition-fast),
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.5;
+    box-shadow: none;
+    pointer-events: none;
+  }
+
+  .btn-primary {
+    color: #fff;
+    background: var(--secondary);
+    box-shadow: 0 10px 24px rgb(17 18 22 / 0.14);
+  }
+
+  .btn-secondary {
+    color: var(--foreground);
+    background: var(--surface);
+    border-color: var(--border);
+  }
+
+  .btn-ghost {
+    color: var(--foreground-secondary);
+    background: transparent;
+  }
+
+  .btn-accent {
+    color: var(--accent-ink);
+    background: var(--accent);
+  }
+
+  .btn-dark {
+    color: #fff;
+    background: var(--secondary);
+  }
+
+  @media (hover: hover) {
+    .btn-primary:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgb(17 18 22 / 0.18);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-subtle);
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost:hover {
+      color: var(--foreground);
+      background: var(--surface-muted);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+  }
+
+  /* ---------- Badges ---------- */
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 29px;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--foreground-secondary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+  }
+
+  .badge-primary {
+    border-color: rgb(87 87 232 / 0.18);
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .badge-success {
+    border-color: rgb(22 155 98 / 0.18);
+    background: var(--success-soft);
+    color: var(--success);
+  }
+
+  .badge-warning {
+    border-color: rgb(185 106 0 / 0.18);
+    background: var(--warning-soft);
+    color: var(--warning);
+  }
+
+  /* ---------- Inputs ---------- */
+
+  .input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.72rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--foreground);
+    box-shadow: inset 0 1px 2px rgb(17 18 22 / 0.025);
+    transition:
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  @media (hover: hover) {
+    .input:hover {
+      border-color: var(--border-strong);
+    }
+  }
+
+  /* Transparent outline (not `outline: 0`) stays visible in
+     Windows High Contrast / forced-colors mode. */
+  .input:focus-visible {
+    outline: 2px solid transparent;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 4px rgb(87 87 232 / 0.18);
+  }
+
+  /* ---------- Process / timeline ---------- */
+
+  .process-line {
+    position: relative;
+  }
+
+  .process-line::before {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    left: 17px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .process-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .process-step + .process-step {
+    margin-top: 2rem;
+  }
+
+  .process-step-number {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    background: var(--background);
+    color: var(--foreground-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  /* ---------- Motion ---------- */
+
+  .interactive {
+    transition:
+      transform 300ms var(--ease-out),
+      box-shadow 300ms var(--ease-out),
+      border-color 300ms var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .interactive:hover {
+      transform: translateY(-4px);
+    }
+  }
+
+  /* `backwards`, not `both`: with `both` the finished animation keeps
+     owning `transform`, which silently disables hover lifts on the
+     same element (e.g. .reveal.card-hover). */
+  :is(.reveal, [data-reveal]) {
+    animation: skillx-reveal 700ms var(--ease-out) backwards;
+  }
+}
+
+@keyframes skillx-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   UTILITIES
+   ========================================================= */
+
+@layer utilities {
+  .page-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--background);
+  }
+
+  .surface {
+    background: var(--surface);
+  }
+
+  .surface-subtle {
+    background: var(--surface-subtle);
+  }
+
+  .grid-background {
+    background-color: var(--background);
+    background-image:
+      linear-gradient(to right, rgb(17 18 22 / 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(17 18 22 / 0.055) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .dot-background {
+    background-image: radial-gradient(rgb(17 18 22 / 0.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  .gradient-brand {
+    background: var(--gradient-brand-soft);
+  }
+
+  .gradient-dark {
+    background: var(--secondary);
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+
+  .text-muted {
+    color: var(--foreground-muted);
+  }
+
+  .text-subtle {
+    color: var(--foreground-subtle);
+  }
+
+  .text-secondary {
+    color: var(--foreground-secondary);
+  }
+
+  .text-gradient {
+    color: var(--primary);
+  }
+}
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .card,
+  .live-class,
+  .live-classroom {
+    box-shadow: none;
+  }
 }

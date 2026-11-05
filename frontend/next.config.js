@@ -5,7 +5,12 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  poweredByHeader: false,
+  compress: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   images: {
     // Allow images from Unsplash used in the demo content
     remotePatterns: [

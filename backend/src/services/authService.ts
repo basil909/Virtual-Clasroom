@@ -9,6 +9,8 @@ export const authService = {
     if (password.length < 6) {
       throw new Error('Password must be at least 6 characters.')
     }
+    email = email.trim().toLowerCase()
+    name = name.trim()
     if (userRepository.findByEmail(email)) {
       throw new Error('An account with this email already exists.')
     }
@@ -24,7 +26,7 @@ export const authService = {
   },
 
   async login(email: string, password: string) {
-    const record = userRepository.findByEmail(email)
+    const record = userRepository.findByEmail(email.trim().toLowerCase())
     if (!record || !(await verifyPassword(password, record.passwordHash))) {
       throw new Error('Invalid email or password.')
     }

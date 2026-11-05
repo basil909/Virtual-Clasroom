@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { db } from '../db/connection.js'
 import type { Course } from '../types/index.js'
 
@@ -112,6 +113,21 @@ export const courseRepository = {
       studentCount: r.student_count,
       progress: r.progress,
     }))
+  },
+
+  isEnrolled(studentId: string, courseId: string): boolean {
+    return Boolean(
+      db
+        .prepare('SELECT 1 FROM enrollments WHERE student_id = ? AND course_id = ?')
+        .get(studentId, courseId)
+    )
+  },
+
+  enroll(studentId: string, courseId: string) {
+    db.prepare(
+      `INSERT OR IGNORE INTO enrollments (id, student_id, course_id, progress)
+       VALUES (?, ?, ?, 0)`
+    ).run(randomUUID(), studentId, courseId)
   },
 
   count(): number {

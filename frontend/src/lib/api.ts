@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
 
 export type User = {
   id: string
@@ -56,6 +57,14 @@ export type Assignment = {
   submissionCount?: number
 }
 
+export type ChatMessage = {
+  id: string
+  userId: string
+  user: string
+  text: string
+  createdAt: string
+}
+
 export type TeamsStatus = {
   connected: boolean
   accountEmail: string | null
@@ -68,10 +77,17 @@ function getToken(): string | null {
   return localStorage.getItem('skillx_token')
 }
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  options?: RequestInit,
+  revalidateSeconds?: number
+): Promise<T> {
   const token = getToken()
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
+    ...(typeof window === 'undefined' && revalidateSeconds
+      ? { next: { revalidate: revalidateSeconds } }
+      : {}),
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -102,7 +118,8 @@ export const api = {
 
   me: () => request<{ user: User }>('/api/auth/me'),
 
-  courses: () => request<{ courses: Course[] }>('/api/courses'),
+  courses: () =>
+    request<{ courses: Course[] }>('/api/courses', undefined, 60),
   teachers: () => request<{ teachers: Teacher[] }>('/api/teachers'),
   pricing: () =>
     request<{ plans: Array<{ id: string; name: string; price: string; period: string; description: string; features: string[]; highlighted: boolean }> }>('/api/pricing'),
@@ -111,6 +128,24 @@ export const api = {
   instructorCourses: () => request<{ courses: Course[] }>('/api/courses/instructor/me'),
   myAssignments: () => request<{ assignments: Assignment[] }>('/api/assignments/me'),
   teacherAssignments: () => request<{ assignments: Assignment[] }>('/api/assignments/teacher'),
+  createAssignment: (body: {
+    courseId: string
+    title: string
+    description?: string
+    dueDate: string
+  }) =>
+    request<{ id: string }>('/api/assignments', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  submitAssignment: (id: string) =>
+    request<{ success: boolean }>(`/api/assignments/${encodeURIComponent(id)}/submit`, {
+      method: 'POST',
+    }),
+  enroll: (courseId: string) =>
+    request<{ success: boolean }>(`/api/courses/${encodeURIComponent(courseId)}/enroll`, {
+      method: 'POST',
+    }),
 
   adminStats: () =>
     request<{ stats: { students: number; teachers: number; courses: number; liveSessions: number; recordings: number } }>('/api/admin/stats'),
@@ -118,17 +153,34 @@ export const api = {
   adminSessions: () => request<{ sessions: ClassSession[] }>('/api/admin/sessions'),
   adminCourses: () => request<{ courses: Course[] }>('/api/admin/courses'),
 
-  teamsStatus: (userId: string) =>
-    request<TeamsStatus>(`/api/auth/microsoft/status?userId=${encodeURIComponent(userId)}`),
+  teamsStatus: () => request<TeamsStatus>('/api/auth/microsoft/status'),
 
-  teamsLoginUrl: (userId: string, returnUrl: string) =>
-    `${API_BASE}/api/auth/microsoft/login?userId=${encodeURIComponent(userId)}&returnUrl=${encodeURIComponent(returnUrl)}`,
+  teamsConnect: (returnUrl: string) =>
+    request<{ url: string }>('/api/auth/microsoft/connect', {
+      method: 'POST',
+      body: JSON.stringify({ returnUrl }),
+    }),
 
-  teamsDisconnect: (userId: string) =>
+  teamsDisconnect: () =>
     request<{ success: boolean }>('/api/auth/microsoft/disconnect', {
       method: 'POST',
-      body: JSON.stringify({ userId }),
     }),
+
+  sessionMessages: (sessionId: string, after?: string) =>
+    request<{ messages: ChatMessage[] }>(
+      `/api/sessions/${encodeURIComponent(sessionId)}/messages${
+        after ? `?after=${encodeURIComponent(after)}` : ''
+      }`
+    ),
+
+  sendSessionMessage: (sessionId: string, text: string) =>
+    request<{ message: ChatMessage }>(
+      `/api/sessions/${encodeURIComponent(sessionId)}/messages`,
+      { method: 'POST', body: JSON.stringify({ text }) }
+    ),
+
+  getSession: (id: string) =>
+    request<{ session: ClassSession }>(`/api/sessions/${encodeURIComponent(id)}`),
 
   listSessions: (teacherId?: string) => {
     const query = teacherId ? `?teacherId=${encodeURIComponent(teacherId)}` : ''
@@ -140,6 +192,7 @@ export const api = {
     description?: string
     teacherId?: string
     teacherEmail?: string
+    courseId?: string
     startTime: string
     endTime: string
     createTeamsMeeting?: boolean

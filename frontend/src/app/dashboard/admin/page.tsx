@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import StatCard from '../../../components/dashboard/StatCard'
-import { api, type ClassSession, type Course } from '../../../lib/api'
+import StatCard from '@/features/dashboard/components/StatCard'
+import { api, type ClassSession, type Course } from '@/lib/api'
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState({ students: 0, teachers: 0, courses: 0, liveSessions: 0, recordings: 0 })

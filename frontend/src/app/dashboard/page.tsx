@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../context/AuthContext'
-import { getDashboardPath } from '../../lib/routes'
+import { useAuth } from '@/providers/AuthProvider'
+import { getDashboardPath } from '@/lib/routes'
 
 export default function DashboardIndexPage() {
   const { user, loading } = useAuth()

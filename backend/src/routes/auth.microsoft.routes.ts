@@ -8,30 +8,53 @@ import {
   acquireTokenByCode,
   saveTokenFromAuthResult,
 } from '../integrations/microsoft/tokenService.js'
+import { authenticate, requireRoles, type AuthRequest } from '../middleware/authenticate.js'
+import { HttpError } from '../middleware/errorHandler.js'
 
 export const microsoftAuthRoutes = Router()
 
-microsoftAuthRoutes.get('/login', async (req, res, next) => {
+const DEFAULT_RETURN = `${env.frontendUrl}/dashboard/teacher/classes`
+
+/** Only allow redirects back to our own frontend (prevents open redirects). */
+function safeReturnUrl(value: unknown): string {
+  if (typeof value !== 'string' || !value) return DEFAULT_RETURN
   try {
-    const userId = String(req.query.userId ?? '')
-    const returnUrl = String(
-      req.query.returnUrl ?? `${env.frontendUrl}/dashboard/teacher/classes`
-    )
-    if (!userId) {
-      res.status(400).json({ error: 'userId query parameter is required.' })
-      return
+    const url = new URL(value, env.frontendUrl)
+    if (url.origin === new URL(env.frontendUrl).origin) {
+      return `${url.origin}${url.pathname}`
     }
-    if (!env.isAzureConfigured()) {
-      res.status(503).json({ error: 'Microsoft Teams integration is not configured.' })
-      return
-    }
-    const state = randomUUID()
-    microsoftRepository.saveOAuthState(state, userId, returnUrl)
-    res.redirect(await getAuthCodeUrl(state))
-  } catch (err) {
-    next(err)
+  } catch {
+    /* fall through */
   }
-})
+  return DEFAULT_RETURN
+}
+
+/**
+ * Starts the Microsoft sign-in flow. This is a POST so the caller's JWT can be
+ * sent in the Authorization header; the response contains the Microsoft URL the
+ * browser should navigate to.
+ */
+microsoftAuthRoutes.post(
+  '/connect',
+  authenticate,
+  requireRoles('teacher', 'admin'),
+  async (req: AuthRequest, res, next) => {
+    try {
+      if (!env.isAzureConfigured()) {
+        throw new HttpError(503, 'Microsoft Teams integration is not configured.')
+      }
+      const state = randomUUID()
+      microsoftRepository.saveOAuthState(
+        state,
+        req.user!.sub,
+        safeReturnUrl(req.body?.returnUrl),
+      )
+      res.json({ url: await getAuthCodeUrl(state) })
+    } catch (err) {
+      next(err)
+    }
+  },
+)
 
 microsoftAuthRoutes.get('/callback', async (req, res, next) => {
   try {
@@ -39,43 +62,36 @@ microsoftAuthRoutes.get('/callback', async (req, res, next) => {
     const state = String(req.query.state ?? '')
     const error = req.query.error_description ?? req.query.error
 
+    const fail = (returnUrl: string, message: string) =>
+      res.redirect(`${returnUrl}?teams=error&message=${encodeURIComponent(message)}`)
+
     if (error) {
-      res.redirect(
-        `${env.frontendUrl}/dashboard/teacher/classes?teams=error&message=${encodeURIComponent(String(error))}`
-      )
+      fail(DEFAULT_RETURN, String(error))
       return
     }
 
     const oauthState = microsoftRepository.consumeOAuthState(state)
     if (!oauthState || !code) {
-      res.redirect(
-        `${env.frontendUrl}/dashboard/teacher/classes?teams=error&message=${encodeURIComponent('Invalid OAuth state.')}`
-      )
+      fail(DEFAULT_RETURN, 'Invalid OAuth state.')
       return
     }
 
+    const returnUrl = safeReturnUrl(oauthState.returnUrl)
     const result = await acquireTokenByCode(code)
     if (!result?.accessToken) {
-      res.redirect(
-        `${oauthState.returnUrl}?teams=error&message=${encodeURIComponent('Failed to obtain Microsoft tokens.')}`
-      )
+      fail(returnUrl, 'Failed to obtain Microsoft tokens.')
       return
     }
 
     saveTokenFromAuthResult(oauthState.userId, result as AuthenticationResult)
-    res.redirect(`${oauthState.returnUrl}?teams=connected`)
+    res.redirect(`${returnUrl}?teams=connected`)
   } catch (err) {
     next(err)
   }
 })
 
-microsoftAuthRoutes.get('/status', (req, res) => {
-  const userId = String(req.query.userId ?? '')
-  if (!userId) {
-    res.status(400).json({ error: 'userId is required.' })
-    return
-  }
-  const record = microsoftRepository.get(userId)
+microsoftAuthRoutes.get('/status', authenticate, (req: AuthRequest, res) => {
+  const record = microsoftRepository.get(req.user!.sub)
   res.json({
     connected: Boolean(record),
     accountEmail: record?.accountEmail ?? null,
@@ -84,12 +100,7 @@ microsoftAuthRoutes.get('/status', (req, res) => {
   })
 })
 
-microsoftAuthRoutes.post('/disconnect', (req, res) => {
-  const userId = String(req.body.userId ?? '')
-  if (!userId) {
-    res.status(400).json({ error: 'userId is required.' })
-    return
-  }
-  microsoftRepository.delete(userId)
+microsoftAuthRoutes.post('/disconnect', authenticate, (req: AuthRequest, res) => {
+  microsoftRepository.delete(req.user!.sub)
   res.json({ success: true })
 })

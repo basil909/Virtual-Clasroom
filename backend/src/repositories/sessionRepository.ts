@@ -28,7 +28,8 @@ function map(row: SessionRow): ClassSession {
     endTime: row.end_time,
     status: row.status ?? 'scheduled',
     teamsMeetingId: row.teams_meeting_id,
-    joinUrl: row.join_url,
+    // Sessions without a Teams meeting use the built-in classroom.
+    joinUrl: row.join_url ?? `/video-room/${row.id}`,
     createdAt: row.created_at,
   }
 }
@@ -82,8 +83,10 @@ export const sessionRepository = {
 
   countLive(): number {
     const row = db
-      .prepare(`SELECT COUNT(*) as c FROM class_sessions WHERE status = 'live'`)
-      .get() as { c: number }
+      .prepare(
+        `SELECT COUNT(*) as c FROM class_sessions WHERE start_time <= ? AND end_time >= ?`
+      )
+      .get(new Date().toISOString(), new Date().toISOString()) as { c: number }
     return row.c
   },
 
